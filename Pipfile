@@ -6,8 +6,16 @@ name = "pypi"
 [packages]
 fastapi = "*"
 motor = "*"
+httpx = "*"
+itsdangerous = "*"
+openai = "*"
+pydantic = "*"
+pydantic-settings = "*"
+python-dotenv = "*"
+python-telegram-bot = "*"
+uvicorn = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "2.7"
+python_version = "3.11"

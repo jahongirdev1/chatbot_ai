@@ -27,3 +27,27 @@ th {
 button {
     padding: 8px 12px;
 }
+.actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.actions form {
+    display: inline;
+}
+.search-form {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.pagination {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.pagination a {
+    text-decoration: none;
+    color: #007bff;
+}
