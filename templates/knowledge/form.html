@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if item %}✏️ Edit{% else %}➕ Add{% endif %} Knowledge Item</h2>
+<form method="post">
+    <label>Question (UZ):</label><br>
+    <input name="question_uz" value="{{ item.question_uz if item else '' }}"><br>
+    <label>Answer (UZ):</label><br>
+    <textarea name="answer_uz">{{ item.answer_uz if item else '' }}</textarea><br><br>
+
+    <label>Question (RU):</label><br>
+    <input name="question_ru" value="{{ item.question_ru if item else '' }}"><br>
+    <label>Answer (RU):</label><br>
+    <textarea name="answer_ru">{{ item.answer_ru if item else '' }}</textarea><br><br>
+
+    <label>Question (KZ):</label><br>
+    <input name="question_kz" value="{{ item.question_kz if item else '' }}"><br>
+    <label>Answer (KZ):</label><br>
+    <textarea name="answer_kz">{{ item.answer_kz if item else '' }}</textarea><br><br>
+
+    <label>Category:</label><br>
+    <input name="category" value="{{ item.category if item else '' }}"><br><br>
+
+    <button type="submit">💾 Save</button>
+</form>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ChatBot AI Admin</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+    <h1>💻 ChatBot AI Admin Panel</h1>
+    <nav>
+        <a href="/admin/knowledge">📚 Knowledge</a>
+        <a href="/admin/knowledge/add">➕ Add</a>
+        <a href="/admin/logout" style="color:red;">🚪 Logout</a>
+    </nav>
+</header>
+<main>
+    {% block content %}{% endblock %}
+</main>
+</body>
+</html>

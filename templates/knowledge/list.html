@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>📚 Knowledge Base</h2>
+<table>
+    <tr>
+        <th>UZ</th>
+        <th>RU</th>
+        <th>KZ</th>
+        <th>Actions</th>
+    </tr>
+    {% for item in items %}
+    <tr>
+        <td>{{ item.question_uz }}</td>
+        <td>{{ item.question_ru }}</td>
+        <td>{{ item.question_kz }}</td>
+        <td>
+            <a href="/admin/knowledge/edit/{{ item._id }}">✏️ Edit</a>
+            <a href="/admin/knowledge/delete/{{ item._id }}" onclick="return confirm('Delete?')">🗑 Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}
