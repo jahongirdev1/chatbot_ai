@@ -1,20 +1,40 @@
-import os
-from dotenv import load_dotenv
+from functools import lru_cache
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-load_dotenv()
+class Settings(BaseSettings):
+    """Application configuration loaded from environment variables."""
 
-class Settings:
-    MONGO_URI: str = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-    MONGO_DB: str = os.getenv("MONGO_DB", "chatbot_ai")
-    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "ollama")
-    OPENAI_API_KEY: str | None = os.getenv("OPENAI_API_KEY")
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    TELEGRAM_BOT_TOKEN: str | None = os.getenv("TELEGRAM_BOT_TOKEN")
-    GREEN_API_INSTANCE_ID: str | None = os.getenv("GREEN_API_INSTANCE_ID")
-    GREEN_API_TOKEN: str | None = os.getenv("GREEN_API_TOKEN")
-    ADMIN_API_KEY: str = os.getenv("ADMIN_API_KEY", "changeme")
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    mongo_uri: str = Field(default="mongodb://localhost:27017", alias="MONGO_URI")
+    mongo_db: str = Field(default="chatbot_ai", alias="MONGO_DB")
+
+    ai_provider: str = Field(default="ollama", alias="AI_PROVIDER")
+    openai_api_key: str | None = Field(default=None, alias="OPENAI_API_KEY")
+    ollama_base_url: str = Field(default="http://localhost:11434", alias="OLLAMA_BASE_URL")
+
+    telegram_bot_token: str | None = Field(default=None, alias="TELEGRAM_BOT_TOKEN")
+    green_api_instance_id: str | None = Field(default=None, alias="GREEN_API_INSTANCE_ID")
+    green_api_token: str | None = Field(default=None, alias="GREEN_API_TOKEN")
+
+    admin_api_key: str = Field(default="changeme", alias="ADMIN_API_KEY")
+    session_cookie_name: str = Field(default="admin_session")
+    session_max_age_seconds: int = Field(default=60 * 60 * 12)
+
+    log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
 
-# Bitta global obyekt
-settings = Settings()
+@lru_cache
+def get_settings() -> Settings:
+    """Return a cached application settings instance."""
+
+    return Settings()
+
+
+settings = get_settings()

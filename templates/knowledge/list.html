@@ -1,6 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>📚 Knowledge Base</h2>
+
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="Search questions" value="{{ search }}">
+    <button type="submit">🔍 Search</button>
+</form>
+
+{% if items %}
 <table>
     <tr>
         <th>UZ</th>
@@ -13,11 +20,28 @@
         <td>{{ item.question_uz }}</td>
         <td>{{ item.question_ru }}</td>
         <td>{{ item.question_kz }}</td>
-        <td>
-            <a href="/admin/knowledge/edit/{{ item._id }}">✏️ Edit</a>
-            <a href="/admin/knowledge/delete/{{ item._id }}" onclick="return confirm('Delete?')">🗑 Delete</a>
+        <td class="actions">
+            <a href="/admin/knowledge/edit/{{ item.id }}">✏️ Edit</a>
+            <form method="post" action="/admin/knowledge/delete/{{ item.id }}" onsubmit="return confirm('Delete this item?');">
+                <button type="submit">🗑 Delete</button>
+            </form>
         </td>
     </tr>
     {% endfor %}
 </table>
+{% else %}
+<p>No knowledge items found.</p>
+{% endif %}
+
+{% if pages > 1 %}
+<nav class="pagination">
+    {% if page > 1 %}
+        <a href="?page={{ page - 1 }}{% if search %}&amp;search={{ search }}{% endif %}">⬅️ Previous</a>
+    {% endif %}
+    <span>Page {{ page }} / {{ pages }} ({{ total }} items)</span>
+    {% if page < pages %}
+        <a href="?page={{ page + 1 }}{% if search %}&amp;search={{ search }}{% endif %}">Next ➡️</a>
+    {% endif %}
+</nav>
+{% endif %}
 {% endblock %}

@@ -1,38 +1,55 @@
-from fastapi import APIRouter, Request
-from core.config import settings
-from ai_module import ask_ai
+from __future__ import annotations
+
 import httpx
+from fastapi import APIRouter, HTTPException, Request, status
+
+from ai_module import ask_ai
+from core.config import settings
+from core.logger import logger
+
 
 router = APIRouter(prefix="/api/whatsapp", tags=["WhatsApp"])
 
-GREEN_API_URL = f"https://api.green-api.com/waInstance{settings.GREEN_API_INSTANCE_ID}"
+
+def _build_green_api_url() -> str:
+    if not settings.green_api_instance_id or not settings.green_api_token:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Green API credentials are not configured.",
+        )
+    return f"https://api.green-api.com/waInstance{settings.green_api_instance_id}"
+
 
 @router.post("/webhook")
-async def whatsapp_webhook(request: Request):
-    """
-    Green API webhook qabul qiluvchi endpoint.
-    """
-    data = await request.json()
+async def whatsapp_webhook(request: Request) -> dict[str, str]:
+    """Handle incoming WhatsApp webhooks sent by Green API."""
+
     try:
-        msg = data.get("messageData", {}).get("textMessageData", {}).get("textMessage")
-        sender = data.get("senderData", {}).get("chatId")
-        user_id = sender or "unknown"
+        payload = await request.json()
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON payload") from exc
+    message = payload.get("messageData", {}).get("textMessageData", {}).get("textMessage")
+    sender = payload.get("senderData", {}).get("chatId")
 
-        if not msg or not sender:
-            return {"status": "ignored"}
+    if not message or not sender:
+        logger.info("whatsapp_webhook_ignored", extra={"reason": "missing_message"})
+        return {"status": "ignored", "message": "Event did not contain a text message."}
 
-        # AI dan javob olish
-        answer = await ask_ai(msg)
+    logger.info("whatsapp_message_received", extra={"sender": sender})
 
-        # Javobni foydalanuvchiga qaytarish
-        async with httpx.AsyncClient() as client:
-            await client.post(
-                f"{GREEN_API_URL}/sendMessage/{settings.GREEN_API_TOKEN}",
-                json={"chatId": sender, "message": answer},
-            )
+    try:
+        answer = await ask_ai(message)
+    except Exception as exc:
+        logger.exception("whatsapp_ai_failed", extra={"sender": sender})
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="AI provider error") from exc
 
-        return {"status": "ok", "message": "sent"}
+    base_url = _build_green_api_url()
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(
+            f"{base_url}/sendMessage/{settings.green_api_token}",
+            json={"chatId": sender, "message": answer},
+        )
+        response.raise_for_status()
 
-    except Exception as e:
-        print("Webhook error:", e)
-        return {"status": "error", "message": str(e)}
+    logger.info("whatsapp_message_sent", extra={"sender": sender})
+    return {"status": "ok", "message": "sent"}

@@ -1,4 +1,7 @@
-import openai
+from __future__ import annotations
+
+from openai import AsyncOpenAI
+
 from .base_ai import BaseAIProvider
 from core.config import settings
 
@@ -8,19 +11,25 @@ LANG_PROMPTS = {
     "kz": "Жауапты қазақ тілінде жаз.",
 }
 
+
 class OpenAIProvider(BaseAIProvider):
-    def __init__(self):
-        openai.api_key = settings.OPENAI_API_KEY
+    def __init__(self) -> None:
+        self.client = AsyncOpenAI(api_key=settings.openai_api_key)
         self.model = "gpt-3.5-turbo"
 
-    async def generate_answer(self, question: str, context: str | None = None, lang: str = "uz") -> str:
+    async def generate_answer(
+        self,
+        question: str,
+        context: str | None = None,
+        lang: str = "uz",
+    ) -> str:
         prompt_lang = LANG_PROMPTS.get(lang, LANG_PROMPTS["uz"])
 
-        completion = await openai.ChatCompletion.acreate(
+        response = await self.client.chat.completions.create(
             model=self.model,
             messages=[
                 {"role": "system", "content": f"You are a helpful assistant. {prompt_lang}"},
-                {"role": "user", "content": f"{context or ''}\n{question}"}
-            ]
+                {"role": "user", "content": f"{context or ''}\n{question}"},
+            ],
         )
-        return completion.choices[0].message["content"].strip()
+        return response.choices[0].message.content.strip()
