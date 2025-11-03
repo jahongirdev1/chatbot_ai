@@ -7,7 +7,7 @@ from core.config import settings
 
 signer = TimestampSigner(settings.admin_api_key)
 
-COOKIE_NAME = settings.session_cookie_name
+COOKIE_NAME = settings.admin_session_cookie_name
 
 
 def create_session_token(username: str) -> str:

@@ -7,11 +7,39 @@
 </head>
 <body>
 <header>
-    <h1>💻 ChatBot AI Admin Panel</h1>
+    <h1>
+        <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10h-2.5l1.5 3h-2l-1.5-3h-7l-1.5 3h-2l1.5-3H4V5Zm2 0v8h12V5H6Zm-2 12h16v2H4v-2Z" />
+            </svg>
+        </span>
+        ChatBot AI Admin Panel
+    </h1>
     <nav>
-        <a href="/admin/knowledge">📚 Knowledge</a>
-        <a href="/admin/knowledge/add">➕ Add</a>
-        <a href="/admin/logout" style="color:red;">🚪 Logout</a>
+        <a href="/admin/knowledge">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 4h9a4 4 0 0 1 4 4v12h-2V8a2 2 0 0 0-2-2H4V4Zm0 4h9a4 4 0 0 1 4 4v8h-2v-8a2 2 0 0 0-2-2H4V8Zm0 4h7a3 3 0 0 1 3 3v7H9a3 3 0 0 1-3-3H4v-7Zm7 8v-5H6v2a1 1 0 0 0 1 1h4Z" />
+                </svg>
+            </span>
+            Knowledge
+        </a>
+        <a href="/admin/knowledge/add">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5Z" />
+                </svg>
+            </span>
+            Add Item
+        </a>
+        <a href="/admin/logout" class="link-danger">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M13 4a1 1 0 0 1 1 1v4h-2V6H6v12h6v-3h2v4a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h8Zm5.707 7.707L16.414 14l-.707-.707L17.586 11l-1.879-1.879.707-.707L18.707 11a1 1 0 0 1 0 1.414Z" />
+                </svg>
+            </span>
+            Logout
+        </a>
     </nav>
 </header>
 <main>

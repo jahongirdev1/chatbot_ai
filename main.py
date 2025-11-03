@@ -1,8 +1,9 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.sessions import SessionMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from ai_module import shutdown_ai
@@ -15,7 +16,17 @@ from routers import admin, chat, feedback, knowledge, whatsapp
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "templates" / "static"
 
-app = FastAPI(title="ChatBot AI Backend with Admin Panel")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_indexes()
+    try:
+        yield
+    finally:
+        await shutdown_ai()
+
+
+app = FastAPI(title="ChatBot AI Backend with Admin Panel", lifespan=lifespan)
 
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(
@@ -42,16 +53,6 @@ app.include_router(feedback.router)
 app.include_router(knowledge.router)
 app.include_router(whatsapp.router)
 app.include_router(admin.router)
-
-
-@app.on_event("startup")
-async def startup_event() -> None:
-    await init_indexes()
-
-
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    await shutdown_ai()
 
 
 @app.get("/")

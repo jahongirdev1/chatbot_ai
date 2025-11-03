@@ -4,10 +4,9 @@ import re
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Query
 from pydantic import BaseModel
 
-from ai_module import ask_ai
 from core.database import db
 from core.logger import logger
 from models.message import Language, Message
@@ -15,7 +14,7 @@ from models.message import Language, Message
 
 class ChatResponse(BaseModel):
     answer: str
-    source: Literal["knowledge_base", "ai"]
+    source: Literal["knowledge_base", "not_found"]
     message_id: str
 
 
@@ -39,36 +38,40 @@ async def ask_bot(message: Message, lang: Language = Query(Language.uz)) -> Chat
 
     knowledge_doc = None
     try:
-        knowledge_doc = await db.knowledge.find_one(
-            {"$text": {"$search": f'"{message.question}"'}},
-            projection={field_answer: 1},
+        cursor = (
+            db.knowledge.find(
+                {"$text": {"$search": message.question}},
+                projection={field_answer: 1, "score": {"$meta": "textScore"}},
+            )
+            .sort([("score", {"$meta": "textScore"})])
+            .limit(1)
         )
+        hits = await cursor.to_list(length=1)
+        if hits:
+            knowledge_doc = hits[0]
     except Exception:  # pragma: no cover - fallback if text search fails
         logger.exception("knowledge_text_search_failed", extra={"lang": lang.value})
 
     if not knowledge_doc:
-        regex = {"$regex": re.escape(message.question), "$options": "i"}
-        knowledge_doc = await db.knowledge.find_one(
-            {field_question: regex},
-            projection={field_answer: 1},
-        )
+        keywords = [word for word in re.findall(r"\w+", message.question) if len(word) > 2]
+        if keywords:
+            unique_keywords = list(dict.fromkeys(keywords))[:6]
+            pattern = "|".join(re.escape(word) for word in unique_keywords)
+            regex = {"$regex": pattern, "$options": "i"}
+            knowledge_doc = await db.knowledge.find_one(
+                {field_question: regex},
+                projection={field_answer: 1},
+            )
 
     answer = knowledge_doc.get(field_answer) if knowledge_doc else None
-    source: Literal["knowledge_base", "ai"] = "knowledge_base"
+    source: Literal["knowledge_base", "not_found"] = "knowledge_base"
 
     if not answer:
-        try:
-            answer = await ask_ai(message.question, lang=lang.value)
-            source = "ai"
-        except Exception as exc:
-            logger.exception(
-                "ai_generation_failed",
-                extra={"lang": lang.value, "user_id": message.user_id},
-            )
-            raise HTTPException(
-                status_code=status.HTTP_502_BAD_GATEWAY,
-                detail="Failed to generate AI response.",
-            ) from exc
+        answer = (
+            "ℹ️ Bu savol bo‘yicha bilimlar bazasida javob topilmadi. "
+            "Iltimos, mavjud ma’lumotlarga mos savol bering."
+        )
+        source = "not_found"
 
     created_at = datetime.now(tz=timezone.utc)
     record = {

@@ -1,14 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>🔐 Admin Login</h2>
-
-<form method="post">
-    <label>Parol:</label><br>
-    <input type="password" name="password" placeholder="Enter admin password"><br><br>
-    <button type="submit">Kirish</button>
-</form>
-
-{% if error %}
-<p style="color: red;">{{ error }}</p>
-{% endif %}
+<section class="auth-card card">
+    <h2>
+        <span class="icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V11a1 1 0 0 1 1-1h1Zm2-3v3h6V7a3 3 0 0 0-6 0Zm7 5H8v8h8v-8Z" />
+            </svg>
+        </span>
+        Admin Login
+    </h2>
+    <form method="post" class="auth-form">
+        <label for="password">Parol</label>
+        <div class="input-icon">
+            <span class="icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M17 11V7a5 5 0 0 0-10 0v4H5v10h14V11h-2Zm-8-4a3 3 0 1 1 6 0v4H9V7Z" />
+                </svg>
+            </span>
+            <input id="password" type="password" name="password" placeholder="Enter admin password" required>
+        </div>
+        <button type="submit" class="btn">Kirish</button>
+    </form>
+    {% if error %}
+        <p class="error-text">{{ error }}</p>
+    {% endif %}
+</section>
 {% endblock %}
